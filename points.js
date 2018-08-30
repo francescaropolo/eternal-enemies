@@ -1,6 +1,6 @@
 'use strict';
 
-function Enemy (canvas, y, speed) {
+function Points (canvas, y, speed) {
     var self = this;
 
     self.canvas = canvas;
@@ -11,23 +11,22 @@ function Enemy (canvas, y, speed) {
     self.ctx = self.canvas.getContext('2d');
 }
 
-Enemy.prototype.update = function () {
+Points.prototype.update = function () {
     var self = this;
 
     self.x = self.x -self.speed;
 };
 
-Enemy.prototype.draw = function () {
+Points.prototype.draw = function () {
     var self = this;
 
-    self.ctx.fillStyle = '#FF6F6C';
+    self.ctx.fillStyle = '#6EC6EF';
     self.ctx.fillRect(self.x - (self.size/2), self.y- (self.size/2), self.size, self.size);
 
 };
 
-Enemy.prototype.isInScreen = function () {
+Points.prototype.isInScreen = function () {
     var self = this;
     //  if x is smaller than 0 remove from the arry
     return self.x + self.size / 2 > 0;
 }
-

@@ -5,7 +5,7 @@ function Player (canvas, lives) {
 
     self.canvas = canvas;
     self.lives = lives;
-    self.size = 100;
+    self.size = 50;
     self.x = 10 + (self.size / 2);
     self.y = canvas.height / 2;
     self.direction = 0;
@@ -21,9 +21,17 @@ Player.prototype.setDirection = function (direction) {
 
 Player.prototype.collidesWithEnemy = function (enemy) {
     var self = this;
-    var result = true;
     
-    return result;
+    const collidesRight = self.x + self.size / 2 > enemy.x - enemy.size / 2;
+    const collidesLeft = self.x - self.size / 2 < enemy.x + enemy.size / 2;
+    const collidesTop = self.y - self.size / 2 < enemy.y + enemy.size / 2;
+    const collidesBottom = self.y + self.size / 2 > enemy.y - enemy.size / 2;
+
+    if (collidesLeft && collidesRight && collidesTop && collidesBottom) {
+        return true;
+    }
+    
+    return false;
 };
 
 Player.prototype.collided = function (enemy) {
@@ -52,7 +60,7 @@ Player.prototype.draw = function () {
 
     
 
-    self.ctx.fillStyle = '#111';
+    self.ctx.fillStyle = '#FEF246';
     self.ctx.fillRect(self.x - (self.size/2), self.y- (self.size/2), self.size, self.size);
 
 };

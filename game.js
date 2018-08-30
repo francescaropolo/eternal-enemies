@@ -4,6 +4,9 @@ function Game() {
   var self = this;
 
   self.gameIsOver = false;
+  self.score = 0;
+  self.pause = false;
+  self.username = idName;
 }
 
 Game.prototype.start = function () {
@@ -16,6 +19,9 @@ Game.prototype.start = function () {
           <span class="label">Lives:</span>
           <span class="value"></span>
         </div>
+        <div class='username'>
+          <p></p>
+        </div>
         <div class="score">
           <span class="label">Score:</span>
           <span class="value"></span>
@@ -27,6 +33,8 @@ Game.prototype.start = function () {
     </main>
   `);
 
+  self.usernameElement = self.gameMain.querySelector('.username p');
+  self.usernameElement.innerText = self.username;
   self.canvasParentElement = self.gameMain.querySelector('.canvas');
   self.canvasElement = self.gameMain.querySelector('canvas');
 
@@ -52,71 +60,127 @@ Game.prototype.start = function () {
   }
 
   document.body.addEventListener('keydown', self.handleKeyDown);
+  document.body.addEventListener('keydown', self.handleKeySpace);
 
-  var height = self.canvasElement.height;
   self.enemies = [];
+  self.points = [];
 
   self.startLoop();
 }
+
 
 Game.prototype.startLoop = function () {
   var self = this;
 
   var ctx = self.canvasElement.getContext('2d');
 
-  function loop() {
-    // create more enemies now and then
-    if (Math.random() > 0.99) {
-      var y = self.canvasElement.height * Math.random();
-      self.enemies.push(new Enemy(self.canvasElement, y, 5));
+  if (!self.paused) {
+
+    function loop() {
+      // create more enemies now and then
+      if (Math.random() > 0.95) {
+        var y = self.canvasElement.height * Math.random();
+        self.enemies.push(new Enemy(self.canvasElement, y, 5));
+      }
+      // create more points now and then
+      if (Math.random() > 0.99) {
+        var y = self.canvasElement.height * Math.random();
+        self.points.push(new Points(self.canvasElement, y, 5));
+      }
+  
+      // update its position
+      self.player.update();
+  
+      // for each enemy update its position
+      self.enemies.forEach(function(item) {
+        item.update();
+      });
+  
+      self.points.forEach(function(item) {
+        item.update();
+      });
+  
+      // check if player collide with enemy
+      self.checkIfEnemiesCollidedPlayer ();
+      self.checkIfPointsCollidedPlayer ();
+      // - loose life or win points
+      self.livesElement.innerText = self.player.lives;
+      self.scoreElement.innerText = self.score;
+      // - remove the enemy player collided wuth
+  
+  
+      // forget enemies already outside the screen
+      self.enemies = self.enemies.filter(function(item) {
+        return item.isInScreen();
+      });
+  
+      self.points = self.points.filter(function(item) {
+        return item.isInScreen();
+      });
+  
+      // erase canvas
+      ctx.clearRect(0, 0, self.width, self.height);
+      // draw the player
+      self.player.draw();
+  
+      // draw all the enemies
+      self.enemies.forEach(function(item) {
+        item.draw();
+      });
+  
+      self.points.forEach(function(item) {
+        item.draw();
+      });
+  
+      if(!self.gameIsOver) {
+        window.requestAnimationFrame(loop);
+      }
     }
-
-    // update its position
-    self.player.update();
-
-    // for each enemy update its position
-    self.enemies.forEach(function(item) {
-      item.update();
-    });
-
-    // check if player collide with enemy
-    self.checkIfEnemiesCollidedPlayer ();
-    // - loose life
-    // - check no more lifes left --- game-over
-    // - remove the enemy player collided wuth
-
-
-    // forget enemies already outside the screen
-    self.enemies = self.enemies.filter(function(item) {
-      return item.isInScreen();
-    });
-
-
-    // erase canvas
-    ctx.clearRect(0, 0, self.width, self.height);
-    // draw the player
-    self.player.draw();
-
-    // draw all the enemies
-    self.enemies.forEach(function(item) {
-      item.draw();
-    });
-
-    if(!self.gameIsOver) {
-      window.requestAnimationFrame(loop);
-    }
+    window.requestAnimationFrame(loop);
   }
   
-  window.requestAnimationFrame(loop);
 
+};
+
+
+Game.prototype.handleKeySpace = function (event) {
+  var self = this;
+
+  if(event.key === ' ') {
+    self.togglePause();
+  }
+};
+
+
+Game.prototype.togglePause = function () {
+  var self = this;
+
+  if(!self.pause) {
+    pause = true;
+  } else {
+    pause = false;
+  }
+};
+
+
+Game.prototype.checkIfPointsCollidedPlayer = function () {
+  var self = this;
+
+  self.points.forEach(function (item, index) {
+    if (self.player.collidesWithEnemy(item)) {
+      self.points.splice(index, 1);
+      self.score++;
+    };
+  });
 };
 
 Game.prototype.checkIfEnemiesCollidedPlayer = function () {
   var self = this;
 
-  self.enemies.forEach(function (item) {
+  self.enemies.forEach(function (item, index) {
     if (self.player.collidesWithEnemy(item)) {
       self.player.collided();
+      self.enemies.splice(index, 1);
 
       if (!self.player.lives) {
         self.gameOver();
