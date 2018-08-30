@@ -28,7 +28,8 @@ function main() {
     document.body.appendChild(splashMain);
 
     var button = splashMain.querySelector('button');
-    button.addEventListener('click', startGame);
+    // button.addEventListener('click', startGame);
+    startGame();
   }
 
   function destoySplash() {
