@@ -1,6 +1,5 @@
 'use strict';
 
-var idName;
 
 function buildDom(html) {
   var div = document.createElement('div');
@@ -12,6 +11,8 @@ function main() {
 
   var splashMain;
   var gameOverMain;
+  var usernameInputElement;
+  var usernameValue;
 
   var game; // instance of Game
 
@@ -33,19 +34,12 @@ function main() {
     document.body.appendChild(splashMain);
 
 
-    var input = document.querySelector('input');
-    input.addEventListener('keyup', function(event) {
-        idName = getUsername(input);
-    });
+    usernameInputElement = document.querySelector('input');
+    
     var button = splashMain.querySelector('button');
     button.addEventListener('click', startGame);
 
   }
-
-  function getUsername(item) {
-    var name = item.value;
-    return name;
-  };
 
   function destoySplash() {
     splashMain.remove();
@@ -58,7 +52,9 @@ function main() {
     destoySplash();
     destoyGameOver();
 
-    game = new Game();
+    usernameValue = usernameInputElement.value;
+
+    game = new Game(usernameValue);
     game.start();
     game.onOver(function () {
       gameOver(game.score);
@@ -94,7 +90,7 @@ function main() {
     span.innerText = score;
 
     var name = gameOverMain.querySelector('.username');
-    name.innerText = idName;
+    name.innerText = usernameValue;
 
     document.body.appendChild(gameOverMain);
   }

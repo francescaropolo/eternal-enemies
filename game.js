@@ -1,12 +1,12 @@
 'use strict';
 
-function Game() {
+function Game(username) {
   var self = this;
 
   self.gameIsOver = false;
   self.score = 0;
-  self.pause = false;
-  self.username = idName;
+  self.isPause = false;
+  self.username = username;
 }
 
 Game.prototype.start = function () {
@@ -60,7 +60,6 @@ Game.prototype.start = function () {
   }
 
   document.body.addEventListener('keydown', self.handleKeyDown);
-  document.body.addEventListener('keydown', self.handleKeySpace);
 
   self.enemies = [];
   self.points = [];
@@ -72,95 +71,81 @@ Game.prototype.start = function () {
 Game.prototype.startLoop = function () {
   var self = this;
 
+  document.body.addEventListener('keyup', function(event) {
+    if(event.key === ' ') {
+      self.isPause = !self.isPause;
+      if(!self.isPause) loop();
+    }
+  });
+
   var ctx = self.canvasElement.getContext('2d');
 
-  if (!self.paused) {
-
-    function loop() {
-      // create more enemies now and then
-      if (Math.random() > 0.95) {
-        var y = self.canvasElement.height * Math.random();
-        self.enemies.push(new Enemy(self.canvasElement, y, 5));
-      }
-      // create more points now and then
-      if (Math.random() > 0.99) {
-        var y = self.canvasElement.height * Math.random();
-        self.points.push(new Points(self.canvasElement, y, 5));
-      }
-  
-      // update its position
-      self.player.update();
-  
-      // for each enemy update its position
-      self.enemies.forEach(function(item) {
-        item.update();
-      });
-  
-      self.points.forEach(function(item) {
-        item.update();
-      });
-  
-      // check if player collide with enemy
-      self.checkIfEnemiesCollidedPlayer ();
-      self.checkIfPointsCollidedPlayer ();
-      // - loose life or win points
-      self.livesElement.innerText = self.player.lives;
-      self.scoreElement.innerText = self.score;
-      // - remove the enemy player collided wuth
-  
-  
-      // forget enemies already outside the screen
-      self.enemies = self.enemies.filter(function(item) {
-        return item.isInScreen();
-      });
-  
-      self.points = self.points.filter(function(item) {
-        return item.isInScreen();
-      });
-  
-      // erase canvas
-      ctx.clearRect(0, 0, self.width, self.height);
-      // draw the player
-      self.player.draw();
-  
-      // draw all the enemies
-      self.enemies.forEach(function(item) {
-        item.draw();
-      });
-  
-      self.points.forEach(function(item) {
-        item.draw();
-      });
-  
-      if(!self.gameIsOver) {
-        window.requestAnimationFrame(loop);
-      }
+  function loop() {
+    // create more enemies now and then
+    if (Math.random() > 0.95) {
+      var y = self.canvasElement.height * Math.random();
+      self.enemies.push(new Enemy(self.canvasElement, y, 5));
     }
-    window.requestAnimationFrame(loop);
+    // create more points now and then
+    if (Math.random() > 0.99) {
+      var y = self.canvasElement.height * Math.random();
+      self.points.push(new Points(self.canvasElement, y, 5));
+    }
+
+    // update its position
+    self.player.update();
+
+    // for each enemy update its position
+    self.enemies.forEach(function(item) {
+      item.update();
+    });
+
+    self.points.forEach(function(item) {
+      item.update();
+    });
+
+    // check if player collide with enemy
+    self.checkIfEnemiesCollidedPlayer ();
+    self.checkIfPointsCollidedPlayer ();
+    // - loose life or win points
+    self.livesElement.innerText = self.player.lives;
+    self.scoreElement.innerText = self.score;
+    // - remove the enemy player collided wuth
+
+
+    // forget enemies already outside the screen
+    self.enemies = self.enemies.filter(function(item) {
+      return item.isInScreen();
+    });
+
+    self.points = self.points.filter(function(item) {
+      return item.isInScreen();
+    });
+
+    // erase canvas
+    ctx.clearRect(0, 0, self.width, self.height);
+    // draw the player
+    self.player.draw();
+
+    // draw all the enemies
+    self.enemies.forEach(function(item) {
+      item.draw();
+    });
+
+    self.points.forEach(function(item) {
+      item.draw();
+    });
+
+    if(!self.gameIsOver && !self.isPause) {
+      window.requestAnimationFrame(loop);
+    }
   }
-  
+  window.requestAnimationFrame(loop);
 
 };
 
 
-Game.prototype.handleKeySpace = function (event) {
-  var self = this;
 
-  if(event.key === ' ') {
-    self.togglePause();
-  }
-};
-
-
-Game.prototype.togglePause = function () {
-  var self = this;
-
-  if(!self.pause) {
-    pause = true;
-  } else {
-    pause = false;
-  }
-};
 
 
 Game.prototype.checkIfPointsCollidedPlayer = function () {
