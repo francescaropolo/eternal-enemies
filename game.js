@@ -28,11 +28,17 @@ Game.prototype.start = function () {
         </div>
       </header>
       <div class="canvas">
-        <canvas></canvas>
+      <canvas></canvas>
       </div>
-    </main>
+      <audio id="song" src="./audio/game-music.mp3"></audio>
+      <div> 
+        <button onclick="document.getElementById('song').play()">Play</button> 
+        <button onclick="document.getElementById('song').pause()">Pause</button> 
+      </div>
+      </main>
   `);
-
+  self.musicElement = self.gameMain.querySelector('audio');
+  self.musicElement.autoplay = true;
   self.usernameElement = self.gameMain.querySelector('.username p');
   self.usernameElement.innerText = self.username;
   self.canvasParentElement = self.gameMain.querySelector('.canvas');
@@ -63,6 +69,7 @@ Game.prototype.start = function () {
 
   self.enemies = [];
   self.points = [];
+  self.lives = [];
 
   self.startLoop();
 }
@@ -74,7 +81,12 @@ Game.prototype.startLoop = function () {
   document.body.addEventListener('keyup', function(event) {
     if(event.key === ' ') {
       self.isPause = !self.isPause;
-      if(!self.isPause) loop();
+      if(!self.isPause) {
+        loop();
+        self.musicElement.play();
+      } else {
+        self.musicElement.pause();
+      } 
     }
   });
 
@@ -92,6 +104,12 @@ Game.prototype.startLoop = function () {
       self.points.push(new Points(self.canvasElement, y, 5));
     }
 
+    // create more lives now and then
+    if (Math.random() > 0.999) {
+      var y = self.canvasElement.height * Math.random();
+      self.lives.push(new Live(self.canvasElement, y, 8));
+    }
+
     // update its position
     self.player.update();
 
@@ -104,9 +122,14 @@ Game.prototype.startLoop = function () {
       item.update();
     });
 
+    self.lives.forEach(function(item) {
+      item.update();
+    });
+
     // check if player collide with enemy
     self.checkIfEnemiesCollidedPlayer ();
     self.checkIfPointsCollidedPlayer ();
+    self.checkIfLivesCollidedPlayer ();
     // - loose life or win points
     self.livesElement.innerText = self.player.lives;
     self.scoreElement.innerText = self.score;
@@ -136,6 +159,10 @@ Game.prototype.startLoop = function () {
       item.draw();
     });
 
+    self.lives.forEach(function(item) {
+      item.draw();
+    });
+
     if(!self.gameIsOver && !self.isPause) {
       window.requestAnimationFrame(loop);
     }
@@ -144,9 +171,16 @@ Game.prototype.startLoop = function () {
 
 };
 
+Game.prototype.checkIfLivesCollidedPlayer = function () {
+  var self = this;
 
-
-
+  self.lives.forEach(function (item, index) {
+    if (self.player.collidesWithLives(item)) {
+      self.player.collidedLive();
+      self.lives.splice(index, 1);
+    };
+  });
+};
 
 Game.prototype.checkIfPointsCollidedPlayer = function () {
   var self = this;

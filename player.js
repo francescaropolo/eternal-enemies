@@ -34,12 +34,32 @@ Player.prototype.collidesWithEnemy = function (enemy) {
     return false;
 };
 
+Player.prototype.collidesWithLives = function (enemy) {
+    var self = this;
+    
+    const collidesRight = self.x + self.size / 2 > enemy.x - enemy.size / 2;
+    const collidesLeft = self.x - self.size / 2 < enemy.x + enemy.size / 2;
+    const collidesTop = self.y - self.size / 2 < enemy.y + enemy.size / 2;
+    const collidesBottom = self.y + self.size / 2 > enemy.y - enemy.size / 2;
+
+    if (collidesLeft && collidesRight && collidesTop && collidesBottom) {
+        return true;
+    }
+    
+    return false;
+};
+
 Player.prototype.collided = function (enemy) {
     var self = this;
     
     self.lives--;
 };
 
+Player.prototype.collidedLive = function () {
+    var self = this;
+    
+    self.lives++;
+};
 
 Player.prototype.update = function () {
     var self = this;
